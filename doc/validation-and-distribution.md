@@ -70,6 +70,77 @@ Move the application folder to its permanent location before enabling Windows st
 
 Build output, publish output, and smoke-test profiles are excluded from Git. The repository contains source, documentation, and test fixtures.
 
+### Create a new GitHub Release
+
+Releases are published manually; pushing a tag does not currently build or upload the app. Run these commands from the repository root in the same PowerShell session.
+
+1. Start from an up-to-date `main` branch with a clean working tree:
+
+   ```powershell
+   git switch main
+   git pull --ff-only origin main
+   git status --short
+   ```
+
+   Resolve any local changes before continuing.
+
+2. Choose a new version and tag. The values below are examples; use a version that has not already been released:
+
+   ```powershell
+   $releaseVersion = '0.1.0'
+   $releaseTag = "v$releaseVersion"
+   ```
+
+   Add or update `<Version>0.1.0</Version>` in the main property group of `WFMarketTrends/WFMarketTrends.csproj`, using your chosen version. Update the `WFMarketTrends/0.1.0` User-Agent in `WFMarketTrends/Services/MarketClient.cs` to match. Record any feature changes, fixes, or known limitations for the release notes.
+
+3. Run the automated checks, desktop smoke test, and relevant manual acceptance checks described above. Commit the version changes and push the tested source:
+
+   ```powershell
+   git add WFMarketTrends/WFMarketTrends.csproj WFMarketTrends/Services/MarketClient.cs
+   git commit -m "Prepare $releaseTag"
+   git push origin main
+   git status --short
+   ```
+
+   Commit any other intended release changes as well. The working tree must be clean before packaging so the binaries match the tagged source.
+
+4. Publish a normal build into a new, version-specific folder, copy the license notices, and launch it for a final check:
+
+   ```powershell
+   $releaseFolder = ".\publish\$releaseTag\win-x64"
+   if (Test-Path -LiteralPath $releaseFolder) { throw 'Choose a fresh release folder before publishing.' }
+   dotnet publish WFMarketTrends/WFMarketTrends.csproj -c Release -p:Platform=x64 -p:SmokeTest=false -o $releaseFolder
+   Copy-Item LICENSE, LICENSE.EdgeWeb -Destination $releaseFolder
+   & "$releaseFolder\WFMarketTrends.exe"
+   ```
+
+   Exit any running normal instance before testing the published executable. Verify the packaged dashboard loads, then exit it from the tray. The release folder must include `Web/` and all runtime and WinUI resources, without smoke-test profiles or personal settings.
+
+5. Zip the complete application folder and create a SHA-256 checksum:
+
+   ```powershell
+   $archive = ".\publish\WFMarketTrends-$releaseTag-win-x64.zip"
+   Compress-Archive -Path "$releaseFolder\*" -DestinationPath $archive
+   $digest = Get-FileHash -LiteralPath $archive -Algorithm SHA256
+   "$($digest.Hash.ToLowerInvariant())  $([System.IO.Path]::GetFileName($archive))" |
+       Set-Content -LiteralPath "$archive.sha256" -Encoding ascii
+   ```
+
+   Extract the ZIP into a separate folder and launch its executable to confirm the archive contains a runnable app. Exit that instance after verification.
+
+6. Create an annotated tag for the tested commit and push it:
+
+   ```powershell
+   git tag -a $releaseTag -m "Warframe Market Trends $releaseTag"
+   git push origin $releaseTag
+   ```
+
+   Use a new tag for each release; do not move an existing release tag to a different commit.
+
+7. Open the repository's [Releases page](https://github.com/Terbish/WF-Market-Trends/releases), choose **Draft a new release**, and select the tag you just pushed. Set the title to `Warframe Market Trends vX.Y.Z`, add your release notes, and attach the ZIP and its `.sha256` file. Mark preview builds as a pre-release. Review the draft and attachments, then choose **Publish release**. See [GitHub's release instructions](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) for the release form.
+
+   Include Windows x64 and WebView2 requirements in the notes, plus instructions to extract the entire ZIP and launch `WFMarketTrends.exe`. GitHub's automatically generated source archives contain source code; users who want the runnable app should download the attached Windows ZIP.
+
 ## Data sources and caching
 
 All networking runs in the native host with `User-Agent: WFMarketTrends/0.1.0`. Catalog and orders use the [v2 HTTP API](https://docs.warframe.market/docs/api/overview/).
