@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <RootNamespace>WFMarketTrends</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Web\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260804001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.9169" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(SmokeTest)' == 'true'">
+    <DefineConstants>$(DefineConstants);SMOKE_TEST</DefineConstants>
+  </PropertyGroup>
+  <!-- Unpackaged WinUI publish currently omits the generated app PRI and XBF files. -->
+  <Target Name="AddWinUIResourcesToSingleFile" BeforeTargets="_ComputeFilesToBundle" Condition="'$(PublishSingleFile)' == 'true'">
+    <ItemGroup>
+      <_WinUIXbf Include="$(TargetDir)**\*.xbf" />
+    </ItemGroup>
+    <Error Condition="!Exists('$(ProjectPriFullPath)')" Text="WinUI resource index was not generated: $(ProjectPriFullPath)" />
+    <Error Condition="'@(_WinUIXbf)' == ''" Text="No compiled WinUI XAML files were generated in $(TargetDir)." />
+    <ItemGroup>
+      <ResolvedFileToPublish Include="$(ProjectPriFullPath)">
+        <RelativePath>$(ProjectPriFileName)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+      <ResolvedFileToPublish Include="@(_WinUIXbf)">
+        <RelativePath>%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+  <Target Name="CopyWinUIResourcesToPublish" AfterTargets="Publish" Condition="'$(PublishSingleFile)' != 'true'">
+    <ItemGroup>
+      <_WinUIXbf Include="$(TargetDir)**\*.xbf" />
+    </ItemGroup>
+    <Error Condition="!Exists('$(ProjectPriFullPath)')" Text="WinUI resource index was not generated: $(ProjectPriFullPath)" />
+    <Error Condition="'@(_WinUIXbf)' == ''" Text="No compiled WinUI XAML files were generated in $(TargetDir)." />
+    <Copy SourceFiles="$(ProjectPriFullPath)" DestinationFiles="$(PublishDir)$(ProjectPriFileName)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_WinUIXbf)" DestinationFiles="@(_WinUIXbf->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

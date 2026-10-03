@@ -1,0 +1,21 @@
+<Window x:Class="WFMarketTrends.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Warframe Market Trends">
+  <Grid x:Name="Root" Background="#101419" RequestedTheme="Dark">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+    <Grid Padding="12,6" ColumnSpacing="8">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <TextBlock Text="MARKET TRENDS" VerticalAlignment="Center" FontSize="12" CharacterSpacing="160"/>
+      <Button Grid.Column="1" Click="Settings_Click" AutomationProperties.Name="Panel settings" ToolTipService.ToolTip="Panel settings"><SymbolIcon Symbol="Setting"/></Button>
+      <Button Grid.Column="2" Click="Hide_Click" AutomationProperties.Name="Hide panel" ToolTipService.ToolTip="Hide panel"><SymbolIcon Symbol="Remove"/></Button>
+    </Grid>
+    <InfoBar x:Name="Notice" Grid.Row="1" IsOpen="False" Severity="Warning"/>
+    <Grid Grid.Row="2">
+      <WebView2 x:Name="Browser"/>
+      <StackPanel x:Name="ErrorPanel" Visibility="Collapsed" Padding="24" Spacing="12" Background="#101419">
+        <TextBlock Text="Unable to open the dashboard" FontSize="24" TextWrapping="Wrap"/>
+        <TextBlock x:Name="ErrorDetails" TextWrapping="Wrap"/>
+        <Button Content="Retry" Click="Retry_Click"/>
+        <HyperlinkButton Content="Get WebView2 Runtime" NavigateUri="https://developer.microsoft.com/microsoft-edge/webview2/"/>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>

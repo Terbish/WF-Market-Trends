@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; frame-src 'none'">
+  <title>Warframe Market Trends</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="highlights.css">
+</head>
+<body>
+  <main>
+    <header class="hero"><div class="eyebrow">WARFRAME / MARKET INTELLIGENCE</div><div class="title-row"><h1>Your market,<br><span>at a glance.</span></h1><span class="emblem" aria-hidden="true">◇</span></div><div class="connection"><span id="status-dot"></span><span id="status" role="status">Starting connection…</span></div></header>
+    <div class="market-context"><label>Platform<select id="platform"><option value="pc">PC</option><option value="ps4">PlayStation</option><option value="xbox">Xbox</option><option value="switch">Switch</option><option value="mobile">Mobile</option></select></label><label class="check"><input type="checkbox" id="crossplay" checked> Crossplay</label></div>
+    <div id="error" class="notice" role="alert" hidden></div>
+    <section class="search"><label for="search">FIND AN ITEM</label><input id="search" type="search" placeholder="Search prime sets, mods, arcanes…" autocomplete="off"><div id="results" class="results" hidden></div></section>
+    <section class="highlights-section" aria-labelledby="highlights-title">
+      <div class="section-heading"><h2 id="highlights-title">Market highlights</h2><span class="muted">HISTORICAL · 24H</span></div>
+      <div class="highlight-tabs" role="tablist" aria-label="Market highlights">
+        <button id="rising-tab" role="tab" aria-selected="true" aria-controls="highlights-panel" class="active">Picking up · 24h</button>
+        <button id="holding-tab" role="tab" aria-selected="false" aria-controls="highlights-panel" tabindex="-1">Holding value</button>
+      </div>
+      <p id="highlights-description" class="caption"></p>
+      <div class="section-heading"><span id="history-status" class="muted" role="status">Loading historical prices…</span><button id="history-refresh" class="subtle">↻ Update history</button></div>
+      <div id="highlights-panel" role="tabpanel" aria-labelledby="rising-tab"><div id="highlights" class="highlights"></div></div>
+      <p class="caption highlight-note">Hourly sell-listing statistics for popular prime sets and your watched items. Compares the latest completed hour with 24 hours earlier. Platform statistics; crossplay applies to live orders.</p>
+    </section>
+    <section class="watch-section"><div class="section-heading"><h2>Watchlist</h2><span id="watch-count" class="muted">0 / 20</span></div><div id="watchlist" class="watchlist"><p class="empty">Search for an item and add it to your watchlist.</p></div></section>
+    <section class="detail" id="detail" hidden>
+      <div class="section-heading"><div><div class="eyebrow">ITEM OVERVIEW</div><h2 id="item-name"></h2></div><button id="watch" class="watch-button">+ Watch</button></div>
+      <div class="detail-controls"><label>Variant<select id="variant"></select></label><button id="refresh" class="subtle">↻ Refresh</button></div>
+      <div class="metrics"><div><span class="metric-label">LOWEST SELL</span><strong id="lowest">—</strong><small>platinum / unit</small></div><div><span class="metric-label">HIGHEST BUY</span><strong id="highest">—</strong><small>platinum / unit</small></div><div><span class="metric-label">MEDIAN SELL</span><strong id="median">—</strong><small>online listings</small></div></div>
+      <div class="chart-heading"><h3>Sell price trend</h3><select id="range" aria-label="Chart time range"><option value="1">24 hours</option><option value="7" selected>7 days</option><option value="30">30 days</option></select></div>
+      <div id="chart" class="chart"></div><div class="chart-footer"><span id="change">Collecting snapshots</span><span id="updated" class="muted">No snapshot yet</span></div>
+      <p id="chart-source" class="caption">Historical median sell asking prices. Listings are not completed trades.</p>
+      <div class="section-heading"><h3>Online order book</h3><span id="order-count" class="muted"></span></div>
+      <div class="book-tabs" role="group" aria-label="Order side"><button id="sell-tab" class="active" aria-pressed="true">Sell orders</button><button id="buy-tab" aria-pressed="false">Buy orders</button></div>
+      <div id="orders" class="orders"></div>
+    </section>
+    <section class="feed-section"><div class="section-heading"><h2>Live listings</h2><button id="pause" class="subtle">Pause</button></div><p class="caption">New online listings across the selected market.</p><div id="feed" class="feed"><p class="empty">Waiting for the next listing…</p></div></section>
+    <footer>Data from warframe.market · Independent community tool<br>Hover at the top edge to reveal. Click outside to hide.</footer>
+  </main>
+  <script src="analytics.js"></script><script src="app.js"></script>
+</body>
+</html>
