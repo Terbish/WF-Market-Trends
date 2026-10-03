@@ -1,51 +1,65 @@
 # Warframe Market Trends
 
-A Windows tray panel for watching Warframe Market asking prices. Built with WinUI 3 and WebView2, using EdgeWeb's native top-edge reveal, click-to-keep-open behavior, animation, geometry and tray approach. The embedded page is a bundled dashboard; there is no address bar or website setup.
+Keep an eye on Warframe Market prices from a compact Windows panel. Search items, follow your watchlist, explore price history, and see new listings without leaving a full browser window open.
 
-## Build and run
+The app lives in your system tray. Hover at the top edge of your screen to bring it into view.
 
-Requires Windows 10 build 19041 or newer (x64), .NET 10 SDK, and Microsoft Edge WebView2 Evergreen Runtime.
+## Features
 
-```powershell
-dotnet build WFMarketTrends/WFMarketTrends.csproj -c Release -p:Platform=x64
-& .\WFMarketTrends\bin\x64\Release\net10.0-windows10.0.19041.0\win-x64\WFMarketTrends.exe
-```
+- **Market highlights:** discover items picking up in price over 24 hours and items holding their value. Highlights cover 12 starter prime sets, your watched items, and the item you are viewing.
+- **Historical price charts:** view 24-hour, 7-day, and 30-day price trends. Historical data loads automatically, so you do not need to leave the app running for a day.
+- **Personal watchlist:** save up to 20 item and variant combinations. Your watchlist stays saved between sessions.
+- **Current prices:** see the lowest sell price, highest buy price, median sell price, and online order book.
+- **Live listings:** follow newly posted listings and pause the feed when you want to inspect it.
+- **Platform and variant selection:** choose PC, PlayStation, Xbox, Switch, or Mobile, with crossplay for live orders where supported. Ranked mods and other item variants have separate prices.
+- **Adjustable panel:** change its size, choose left, middle, or right placement, and optionally start it with Windows.
 
-On normal launch the panel opens. Hover for 150 ms at the top edge within its horizontal span to reveal it again. Hover-only reveals hide on leaving; click inside to keep it visible until an outside click. The dashboard and feed stay alive while hidden. Alt+F4 hides the panel. Use the tray menu to exit. A second instance exits to avoid WebView profile conflicts.
+## Requirements
 
-Panel settings control dimensions, Left/Middle/Right placement and optional Windows startup. Startup launches hidden. Default dimensions are 520 × 844 logical pixels, capped to the primary monitor. Topmost behavior works with ordinary and borderless windows; exclusive fullscreen is controlled by Windows.
+- Windows 10 version 2004 (build 19041) or newer, x64.
+- [Microsoft Edge WebView2 Evergreen Runtime](https://developer.microsoft.com/microsoft-edge/webview2/).
+- An internet connection to fetch market data.
 
-## Tracking
+To build the app from source, see [Build, validation, and distribution](doc/validation-and-distribution.md).
 
-- Search the English item catalog, select a variant, and watch up to 20 item/variant pairs.
-- Home-screen Market highlights loads historical prices for 12 starter prime sets, your watchlist and the selected item. **Picking up · 24h** ranks variants gaining at least 5%; **Holding value** shows variants within ±3% and a daily price range of at most 6%. They compare the latest completed hourly statistic with 24 hours earlier. No 24-hour local recording period is required. Data must cover the comparison period with at least 12 samples, no gaps over three hours, and a latest statistic within three hours. Click a row to open its item and variant. Missing, thin or stale history is excluded.
-- Select PC, PlayStation, Xbox, Switch or Mobile and crossplay. Switch disables crossplay.
-- Lowest sell, highest buy and median sell use visible online/in-game listings. Bulk listings are normalized to platinum per unit. Median is unweighted across listings.
-- Rank, charges, sculpture stars and subtype separate item variants. Histories also separate platform and crossplay.
-- The selected item refreshes every minute; the watchlist refreshes every five minutes. Responses are reused for 30 seconds. All HTTP calls pass through a shared limit of two requests per second and respect rate-limit cooldowns.
-- The live feed uses the documented new-order subscription and reconnects with increasing delays. Pause freezes feed display; it does not stop snapshot collection.
-- Historical charts use hourly sell-listing statistics from the last 48 hours and daily statistics for longer views, without mixing buy listings or completed-trade statistics. Historical platform data is separate from crossplay-filtered live orders. Unsupported or ambiguous variants (including bulk items without verified unit-price normalization) fall back to local chart recording and do not appear in historical highlights.
-- Local snapshots remain available as a chart fallback, at most once per minute, retaining up to 30 days with reduced detail for older samples. They are kept separate from imported historical statistics. No completed sales are inferred from listings. Cached watchlist prices carry their snapshot time.
+## Getting started
 
-Networking runs in the native host with `User-Agent: WFMarketTrends/0.1.0`. Catalog and orders use the [v2 HTTP API](https://docs.warframe.market/docs/api/overview/). Historical prices use the still-serving legacy route `GET https://api.warframe.market/v1/items/{slug}/statistics`, specifically `payload.statistics_live` sell rows. The legacy API is deprecated and unsupported; historical loading displays errors if it becomes unavailable. Cache files live under `%LOCALAPPDATA%\WFMarketTrends\history-cache\{platform}` and expire after an hour. The UI refreshes history hourly and offers Update history; both reuse fresh cache entries. All calls share the native two-requests-per-second limit. It does not scan all thousands of catalog items.
+1. Launch `WFMarketTrends.exe` from the application folder. Keep the accompanying files in that folder.
+2. Choose your platform and crossplay preference.
+3. Search for an item, select its variant, and choose **Watch** to save it.
+4. Explore the **Picking up · 24h** and **Holding value** tabs, or click an item to open its prices and chart.
 
-The [WebSocket connection](https://docs.warframe.market/docs/websockets/overview/) uses `wss://ws.warframe.market/socket` and the required `wfm` subprotocol. The [public new-order subscription](https://docs.warframe.market/docs/websockets/subscriptions/) provides listings, not transactions. No login is required and no orders are posted or modified.
+Historical prices load in the background and refresh hourly. Current prices refresh every minute for the selected item and every five minutes for the watchlist. Loading status and update times are displayed in the panel.
 
-Settings live in `%LOCALAPPDATA%\WFMarketTrends\settings.json`. The dedicated WebView2 profile stores the watchlist and snapshots in local storage. Removing this profile resets tracking data. Storage failures display a warning. The host accepts fixed read commands only from the local dashboard and blocks external navigation and popup windows.
+## Showing and hiding the panel
 
-## Validation and distribution
+- Hover briefly at the top edge, above the panel's position, to reveal it. Move away to hide a hover-only reveal.
+- Click inside to keep it open until you click outside.
+- Use the hide button or Alt+F4 to hide it. The app continues running in the tray.
+- Double-click the tray icon to show it, or use its menu for settings and **Exit**.
 
-```powershell
-node --test Checks/analytics.test.cjs
-dotnet publish WFMarketTrends/WFMarketTrends.csproj -c Release -p:Platform=x64 -o publish
-```
+Starting with Windows opens the app hidden. The default panel is 520 × 844 logical pixels and fits within the primary monitor. It works over ordinary and borderless windows; exclusive fullscreen games may prevent it from appearing.
 
-Distribute the entire publish folder, including `Web/`. .NET and Windows App SDK are self-contained; WebView2 Runtime is still required. Single-file distribution is not configured for the dashboard assets.
+## Understanding the prices
 
-Manual checks: open the app with no local history and verify historical highlights load, select an item and switch ranks/platforms, restart and verify disk cache reuse, watch/unwatch, pause/resume the feed, disconnect/reconnect the network, reveal/hide from the top edge and tray, and check settings at different DPI scales. Network restrictions may interrupt service; the app displays request errors and feed reconnect status.
+Prices are **asking prices from listings**, not proof of completed trades. Live order-book prices use visible listings from online or in-game users and show platinum per unit.
 
-An isolated desktop test can be built with `dotnet build WFMarketTrends/WFMarketTrends.csproj -c Release -p:Platform=x64 -p:SmokeTest=true -o smoke`. Run `smoke/WFMarketTrends.exe`; it uses a separate profile and mutex, loads the catalog and an item order book, checks saved watchlist and state retained across hide/reveal, and writes `smoke/smoke-test.json`. The diagnostic window is selectable by desktop test tools and exits 30 seconds after writing its result. Do not distribute this build. Live API availability is required.
+**Picking up · 24h** shows variants whose historical median sell price rose by at least 5%. **Holding value** shows variants within ±3% of their earlier price, with no more than 6% movement across the comparison period. Both compare the latest completed hourly statistic with approximately 24 hours earlier. Items with missing, sparse, or stale history are excluded, so either tab can be empty.
 
-Native panel services are adapted from the adjacent EdgeWeb project. Warframe Market is an independent data source; this app is not affiliated with Digital Extremes or Warframe Market.
+Historical statistics are platform-based; the crossplay setting applies to live orders. Some variants and bulk items do not have usable historical data. Their charts fall back to prices recorded locally while the app runs.
 
-The repository's GPL-3.0 license is in `LICENSE`. EdgeWeb's original MIT copyright and permission notice is retained in `LICENSE.EdgeWeb` for the adapted native panel code.
+Historical data currently relies on a legacy Warframe Market endpoint. Changes or interruptions to that service can affect charts and highlights. The app displays loading errors and reconnects the live feed automatically.
+
+## Your data
+
+No Warframe Market login is required. The app reads public market data and does not place or modify orders.
+
+Settings, watchlists, cached prices, and locally recorded history are stored on your computer under `%LOCALAPPDATA%\WFMarketTrends`. Removing the WebView2 profile resets your watchlist and local snapshots.
+
+## Development and licensing
+
+Build commands, automated checks, desktop smoke tests, and packaging instructions are in [Build, validation, and distribution](doc/validation-and-distribution.md).
+
+This is an independent community tool, unaffiliated with Digital Extremes or Warframe Market. Market data comes from [warframe.market](https://warframe.market). The native panel is adapted from EdgeWeb using WinUI 3 and WebView2.
+
+The repository is licensed under [GPL-3.0](LICENSE). EdgeWeb's original MIT notice is retained in [LICENSE.EdgeWeb](LICENSE.EdgeWeb) for the adapted native panel code.
